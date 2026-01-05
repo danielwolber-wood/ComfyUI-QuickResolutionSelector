@@ -1,34 +1,34 @@
+# AI Disclosure: Code comments were generated with AI
+
 import os
 import json
 
 
 class ResolutionSelector:
-    """
-    Selects a resolution from a JSON config and ensures it aligns to a multiple (e.g., 64).
-    """
+    @classmethod
+    def _get_config_path(cls):
+        # Helper to find the file
+        return os.path.join(os.path.dirname(os.path.realpath(__file__)), 'resolutions.json')
 
-    try:
-        p = os.path.dirname(os.path.realpath(__file__))
-        config_path = os.path.join(p, 'resolutions.json')
-
-        if os.path.exists(config_path):
-            with open(config_path, 'r') as f:
-                RESOLUTIONS = json.load(f)
-        else:
-            # Fallback if file is missing
-            RESOLUTIONS = {"Error: Config Missing": [512, 512]}
-    except Exception as e:
-        RESOLUTIONS = {f"Error: {str(e)}": [512, 512]}
+    @classmethod
+    def _load_resolutions(cls):
+        # Helper to read the file
+        path = cls._get_config_path()
+        try:
+            if os.path.exists(path):
+                with open(path, 'r') as f:
+                    return json.load(f)
+        except Exception:
+            pass
+        return {"Error: Config Missing": [512, 512]}
 
     @classmethod
     def INPUT_TYPES(s):
-        # We convert the keys of our loaded dictionary into a list for the dropdown
-        resolution_list = list(s.RESOLUTIONS.keys())
-
+        # This runs ONCE at startup to build the menu
+        data = s._load_resolutions()
         return {
             "required": {
-                "preset": (resolution_list,),
-                # Defaulting to 64 is safe for SD1.5, SDXL, and SD3
+                "preset": (list(data.keys()),),
                 "round_to_multiple": ("INT", {"default": 64, "min": 8, "max": 128, "step": 8}),
             }
         }
@@ -36,15 +36,18 @@ class ResolutionSelector:
     RETURN_TYPES = ("INT", "INT")
     RETURN_NAMES = ("width", "height")
     FUNCTION = "get_resolution"
-    CATEGORY = "Learning/Utils"
+    CATEGORY = "Utils"
 
     def get_resolution(self, preset, round_to_multiple):
-        # If the preset isn't found for some reason, default to 1024
-        dims = self.RESOLUTIONS.get(preset, [1024, 1024])
+        # RELOAD the file right now (Hot Reload)
+        # This ensures we have the latest numbers, even if the server hasn't restarted
+        current_data = self._load_resolutions()
+
+        # Get dimensions (fallback to 1024 if key is missing)
+        dims = current_data.get(preset, [1024, 1024])
         w, h = dims[0], dims[1]
 
-        # Rounding Logic
-        # Formula: round(value / multiple) * multiple
+        # Apply Rounding
         w = round(w / round_to_multiple) * round_to_multiple
         h = round(h / round_to_multiple) * round_to_multiple
 
