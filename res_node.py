@@ -36,7 +36,7 @@ class ResolutionSelector:
     RETURN_TYPES = ("INT", "INT")
     RETURN_NAMES = ("width", "height")
     FUNCTION = "get_resolution"
-    CATEGORY = "Utils"
+    CATEGORY = "DLWW/Utils"
 
     def get_resolution(self, preset, round_to_multiple):
         # RELOAD the file right now (Hot Reload)
