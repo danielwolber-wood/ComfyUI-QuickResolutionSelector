@@ -36,7 +36,7 @@ class ResolutionSelector:
     RETURN_TYPES = ("INT", "INT")
     RETURN_NAMES = ("width", "height")
     FUNCTION = "get_resolution"
-    CATEGORY = "Utils"
+    CATEGORY = "Learning/Utils"
 
     def get_resolution(self, preset, round_to_multiple):
         # If the preset isn't found for some reason, default to 1024
